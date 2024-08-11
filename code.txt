@@ -1,0 +1,74 @@
+CREATE TABLE Cart(Cart_id VARCHAR(7) NOT NULL primary key);
+insert into Cart values('crt1011');
+insert into Cart values('crt1012');
+insert into Cart values('crt1013');
+insert into Cart values('crt1014');
+insert into Cart values('crt1015');
+select * from Cart;
+CREATE TABLE Customer(Customer_id VARCHAR(6) NOT NULL,c_pass VARCHAR(10) NOT NULL,Name VARCHAR(20) NOT NULL,Address VARCHAR(20) NOT NULL,Pincode int NOT NULL,Phone_number_s int NOT NULL,PRIMARY KEY (Customer_id),Cart_id VARCHAR(7) NOT NULL,FOREIGN KEY(Cart_id) REFERENCES Cart(Cart_id));
+insert into Customer values('cid100','ABCM1235','rajat','G453',632014,989313587, 'crt1011');
+insert into Customer values('cid101','ABCM1236','gopal','G454',632015,989313588, 'crt1012');
+insert into Customer values('cid102','ABCM1237','rahul','G455',632016,989313589, 'crt1013');
+insert into Customer values('cid103','ABCM1238','kartik','G456',632017,989313580, 'crt1014');
+insert into Customer values('cid104','ABCM1239','rohit','G457',632018,989313581, 'crt1015');
+select * from Customer;
+CREATE TABLE Seller(Seller_id VARCHAR(6) NOT NULL,s_pass VARCHAR(10) NOT NULL,Name VARCHAR(20) NOT NULL,Address VARCHAR(10) NOT NULL,PRIMARY KEY (Seller_id));
+insert into Seller values('sid100','12345','aman','delhi cmc');
+insert into Seller values('sid101','12345','aman','delhi cmc');
+insert into Seller values('sid102','12345','aman','delhi cmc');
+insert into Seller values('sid103','12345','aman','delhi cmc');
+insert into Seller values('sid104','12345','aman','delhi cmc');
+select * from Seller;
+CREATE TABLE Seller_Phone_num(Phone_num int NOT NULL,Seller_id VARCHAR(6) NOT NULL,PRIMARY KEY (Phone_num, Seller_id),FOREIGN KEY (Seller_id) REFERENCES Seller(Seller_id)ON DELETE CASCADE);
+insert into Seller_Phone_num values(994333620,'sid100');
+insert into Seller_Phone_num values(994333620,'sid101');
+insert into Seller_Phone_num values(994333620,'sid102');
+insert into Seller_Phone_num values(994333620,'sid103');
+insert into Seller_Phone_num values(994333620,'sid104');
+select * from Seller_Phone_num;
+CREATE TABLE Payment(payment_id VARCHAR(7) NOT NULL,payment_date varchar(20) NOT NULL,Payment_type VARCHAR(10) NOT NULL,Customer_id VARCHAR(6) NOT NULL,Cart_id VARCHAR(7) NOT NULL,PRIMARY KEY (payment_id),FOREIGN KEY (Customer_id) REFERENCES Customer(Customer_id),FOREIGN KEY (Cart_id) REFERENCES Cart(Cart_id),total_amount numeric(6));
+insert into Payment values('pmt1001',"10-OCT-1999",'online','cid100','crt1011',NULL);
+insert into Payment values('pmt1002',"11-jan-1999",'online','cid101','crt1012',NULL);
+insert into Payment values('pmt1003',"17-feb-1999",'online','cid102','crt1013',NULL);
+insert into Payment values('pmt1004',"24-jul-1999",'online','cid103','crt1014',NULL);
+insert into Payment values('pmt1005',"16-dec-1999",'online','cid104','crt1015',NULL);
+select * from Payment;
+CREATE TABLE Product(Product_id VARCHAR(7) NOT NULL,Type VARCHAR(7) NOT NULL,Color VARCHAR(15) NOT NULL,P_Size VARCHAR(2) NOT NULL,Gender CHAR(1) NOT NULL,Commission int NOT NULL,Cost int NOT NULL,Quantity int NOT NULL,Seller_id VARCHAR(6),PRIMARY KEY (Product_id),FOREIGN KEY (Seller_id) REFERENCES Seller(Seller_id)ON DELETE SET NULL);
+insert into Product values('pid1001','jeans','red',32,'F',10,10005,20,'sid100');
+insert into Product values('pid1002','jeans','red',32,'M',10,10005,20,'sid101');
+insert into Product values('pid1003','jeans','red',32,'M',10,10005,20,'sid102');
+insert into Product values('pid1004','jeans','red',32,'M',10,10005,20,'sid103');
+insert into Product values('pid1005','jeans','red',32,'M',10,10005,20,'sid104');
+select * from Product;
+
+CREATE TABLE Cart_item(Quantity_wished int NOT NULL,Date_Added varchar(20) NOT NULL,Cart_id VARCHAR(7) NOT NULL,Product_id VARCHAR(7) NOT NULL,purchased varchar(2),FOREIGN KEY (Cart_id) REFERENCES Cart(Cart_id),FOREIGN KEY (Product_id) REFERENCES Product(Product_id));
+insert into Cart_item values(3,"10-OCT-1999",'crt1011','pid1001','N');
+insert into Cart_item values(5,"11-jan-1999",'crt1012','pid1002','Y');
+insert into Cart_item values(7,"17-feb-1999",'crt1013','pid1003','Y');
+insert into Cart_item values(6,"24-jul-1999",'crt1014','pid1004','N');
+insert into Cart_item values(1,"16-dec-1999",'crt1015','pid1005','Y');
+select * from Cart_item;
+
+-- query 1
+select * from Product where product_id in(select product_id from Cart_item where (Cart_id in (select Cart_id from Customer where Customer_id='cid100'))and purchased='N');
+
+-- query 2
+select product_id,Quantity_wished from Cart_item where (purchased='Y' and Cart_id in
+(select Cart_id from Customer where Customer_id='cid101'));
+
+-- query 3
+select product_id, color, cost, seller_id from Product where (type='jeans' and p_size='32'and gender='F' and quantity>0);
+
+-- query 4
+ delete from Cart_item where (Product_id='pid1001' and Cart_id in (select cart_id
+from Customer where Customer_id='cid100'));
+select * from Cart_item;
+
+-- query 5
+delete from Seller where seller_id = 'sid100';
+select * from Seller;
+update Product set quantity = 00 where seller_id is NULL;
+
+-- query 6
+select sum(quantity_wished * cost * commission/100) total_profit from Product p
+join Cart_item c on p.product_id=c.Product_id where purchased='Y';
